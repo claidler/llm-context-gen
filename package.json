@@ -1,0 +1,62 @@
+{
+  "name": "llm-context-gen",
+  "displayName": "llm-context-gen",
+  "description": "",
+  "publisher": "ChrisLaidler",
+  "version": "0.0.6",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onView:llmContextGenSidebar"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "llm-context-gen.helloWorld",
+        "title": "LLM Context Gen"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "llmContextGen",
+          "title": "LLM Context Gen",
+          "icon": "resources/icon.png"
+        }
+      ]
+    },
+    "views": {
+      "llmContextGen": [
+        {
+          "id": "llmContextGenSidebar",
+          "name": "LLM Context Selector",
+          "type": "webview"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.75.0",
+    "@types/mocha": "^10.0.7",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^8.3.0",
+    "@typescript-eslint/parser": "^8.3.0",
+    "eslint": "^9.9.1",
+    "typescript": "^5.5.4",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1"
+  }
+}
