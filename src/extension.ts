@@ -1,6 +1,5 @@
 // extension.ts
 import * as vscode from "vscode";
-import * as fs from "fs";
 import * as path from "path";
 
 export function activate(context: vscode.ExtensionContext) {
@@ -62,11 +61,11 @@ class HelloWorldViewProvider implements vscode.WebviewViewProvider {
     webviewView.webview.onDidReceiveMessage(async (message) => {
       switch (message.command) {
         case "requestFileList":
-          const files = await this.getProjectFiles();
-          const orderedFiles = this.orderFilesByRecency(files);
+          const entries = await this.getProjectFilesAndFolders();
+          const orderedEntries = this.orderFilesByRecency(entries);
           webviewView.webview.postMessage({
             command: "fileList",
-            files: orderedFiles,
+            files: orderedEntries,
           });
           break;
         case "copyContext":
@@ -102,7 +101,7 @@ class HelloWorldViewProvider implements vscode.WebviewViewProvider {
         </head>
         <body>
             <h1>LLM Context Gen</h1>
-            <p>Provide a prompt and select files to include in the context for the LLM.</p>
+            <p>Provide a prompt and select files or folders to include in the context for the LLM.</p>
             
             <!-- Prompt Input (Changed to Textarea) -->
             <div class="prompt-container">
@@ -111,15 +110,18 @@ class HelloWorldViewProvider implements vscode.WebviewViewProvider {
 
             <!-- File Selection Input -->
             <div class="input-container">
-                <input type="text" id="pathInput" placeholder="Type @ to select a file" autocomplete="off" />
+                <input type="text" id="pathInput" placeholder="Type @ to select a file or folder" autocomplete="off" />
                 <div id="dropdown" class="dropdown hidden"></div>
             </div>
 
             <!-- Selected Files Display -->
             <div id="selectedFiles" class="selected-files"></div>
 
-            <!-- Copy Context Button -->
-            <button id="copyButton">Copy Context</button>
+            <!-- Action Buttons -->
+            <div class="button-container">
+                <button id="copyButton">Copy Context</button>
+                <button id="clearButton">Clear All</button>
+            </div>
             
             <script nonce="${nonce}" src="${scriptUri}"></script>
         </body>
@@ -145,41 +147,61 @@ class HelloWorldViewProvider implements vscode.WebviewViewProvider {
     }
   }
 
-  private orderFilesByRecency(files: string[]): string[] {
-    // Files in recentlyOpenedFiles are placed first
-    const recent = this.recentlyOpenedFiles.filter((file) =>
-      files.includes(file)
+  private orderFilesByRecency(entries: FileEntry[]): FileEntry[] {
+    // Entries in recentlyOpenedFiles are placed first
+    const recent = entries.filter((entry) =>
+      this.recentlyOpenedFiles.includes(entry.path)
     );
-    const others = files.filter((file) => !recent.includes(file));
+    const others = entries.filter(
+      (entry) => !this.recentlyOpenedFiles.includes(entry.path)
+    );
     return [...recent, ...others];
   }
 
-  private async getProjectFiles(): Promise<string[]> {
-    const files: string[] = [];
+  private async getProjectFilesAndFolders(): Promise<FileEntry[]> {
+    const entries: FileEntry[] = [];
+    const excludedFolders = ["node_modules", "dist", "out", "build"];
 
     if (vscode.workspace.workspaceFolders) {
       for (const folder of vscode.workspace.workspaceFolders) {
-        const relativeInclude = new vscode.RelativePattern(
-          folder,
-          "**/*.{ts,dart,js,jsx,tsx,html,css,scss,java,py,go,rb,php,swift,kt,json,yaml,yml,xml}"
-        );
-        const relativeExclude = new vscode.RelativePattern(
-          folder,
-          "**/{node_modules,dist,out,build}/**"
-        );
-
-        const uris = await vscode.workspace.findFiles(
-          relativeInclude,
-          relativeExclude,
-          10000
-        );
-        for (const uri of uris) {
-          // Exclude the workspace folder name
-          files.push(vscode.workspace.asRelativePath(uri, false));
-        }
+        await this.traverseUri(folder.uri, "", entries, excludedFolders);
       }
     }
-    return files;
+
+    return entries;
+  }
+
+  private async traverseUri(
+    uri: vscode.Uri,
+    relativePath: string,
+    entries: FileEntry[],
+    excludedFolders: string[]
+  ) {
+    const dirEntries = await vscode.workspace.fs.readDirectory(uri);
+
+    for (const [name, type] of dirEntries) {
+      if (
+        type === vscode.FileType.Directory &&
+        excludedFolders.includes(name)
+      ) {
+        continue;
+      }
+
+      const entryRelativePath = path.posix.join(relativePath, name);
+      const entryUri = uri.with({ path: path.posix.join(uri.path, name) });
+
+      entries.push({ path: entryRelativePath, type });
+
+      if (type === vscode.FileType.Directory) {
+        // Recursively traverse subfolder
+        await this.traverseUri(
+          entryUri,
+          entryRelativePath,
+          entries,
+          excludedFolders
+        );
+      }
+    }
   }
 
   private async handleCopyContext(
@@ -194,35 +216,31 @@ class HelloWorldViewProvider implements vscode.WebviewViewProvider {
         contextText += `${prompt}\n\n`;
       }
 
+      const excludedFolders = ["node_modules", "dist", "out", "build"];
+
       for (const relativePath of filesToCopy) {
-        const workspaceFolders = vscode.workspace.workspaceFolders;
-        if (!workspaceFolders) {
-          throw new Error("No workspace folders found.");
-        }
+        const absoluteUri = await this.resolveAbsolutePath(relativePath);
 
-        let fileFound = false;
-        let absolutePath = "";
-
-        // Search for the file in all workspace folders
-        for (const folder of workspaceFolders) {
-          absolutePath = path.join(folder.uri.fsPath, relativePath);
-
-          // Check if the file exists
-          if (fs.existsSync(absolutePath)) {
-            fileFound = true;
-            break; // Stop searching once the file is found
-          }
-        }
-
-        if (!fileFound) {
+        if (!absoluteUri) {
           throw new Error(
-            `File not found in any workspace folders: ${relativePath}`
+            `File or folder not found in any workspace folders: ${relativePath}`
           );
         }
 
-        // Read file content
-        const content = await this.readFileContent(absolutePath);
-        contextText += `File: ${relativePath}\nContent:\n${content}\n\n`;
+        const fileStat = await vscode.workspace.fs.stat(absoluteUri);
+
+        if (fileStat.type === vscode.FileType.File) {
+          // Read file content
+          const content = await this.readFileContent(absoluteUri);
+          contextText += `File: ${relativePath}\nContent:\n${content}\n\n`;
+        } else if (fileStat.type === vscode.FileType.Directory) {
+          // Process folder
+          contextText += await this.processFolder(
+            absoluteUri,
+            relativePath,
+            excludedFolders
+          );
+        }
       }
 
       // Write to clipboard
@@ -240,17 +258,75 @@ class HelloWorldViewProvider implements vscode.WebviewViewProvider {
     }
   }
 
-  private readFileContent(filePath: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      fs.readFile(filePath, "utf8", (err, data) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(data);
-        }
+  private async processFolder(
+    folderUri: vscode.Uri,
+    relativePath: string,
+    excludedFolders: string[]
+  ): Promise<string> {
+    let contextText = "";
+    const dirEntries = await vscode.workspace.fs.readDirectory(folderUri);
+
+    for (const [name, type] of dirEntries) {
+      if (
+        type === vscode.FileType.Directory &&
+        excludedFolders.includes(name)
+      ) {
+        continue;
+      }
+
+      const entryUri = folderUri.with({
+        path: path.posix.join(folderUri.path, name),
       });
-    });
+      const entryRelativePath = path.posix.join(relativePath, name);
+
+      if (type === vscode.FileType.File) {
+        // Read file content
+        const content = await this.readFileContent(entryUri);
+        contextText += `File: ${entryRelativePath}\nContent:\n${content}\n\n`;
+      } else if (type === vscode.FileType.Directory) {
+        // Recursively process subfolder
+        contextText += await this.processFolder(
+          entryUri,
+          entryRelativePath,
+          excludedFolders
+        );
+      }
+    }
+
+    return contextText;
   }
+
+  private async resolveAbsolutePath(
+    relativePath: string
+  ): Promise<vscode.Uri | null> {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders) {
+      return null;
+    }
+
+    for (const folder of workspaceFolders) {
+      const absolutePath = path.posix.join(folder.uri.fsPath, relativePath);
+      const uri = vscode.Uri.file(absolutePath);
+      try {
+        await vscode.workspace.fs.stat(uri);
+        return uri;
+      } catch {
+        continue;
+      }
+    }
+    return null;
+  }
+
+  private async readFileContent(fileUri: vscode.Uri): Promise<string> {
+    const fileData = await vscode.workspace.fs.readFile(fileUri);
+    return Buffer.from(fileData).toString("utf8");
+  }
+}
+
+// Helper interface for file entries
+interface FileEntry {
+  path: string;
+  type: vscode.FileType;
 }
 
 // Helper function to generate a nonce

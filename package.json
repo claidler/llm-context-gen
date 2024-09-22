@@ -3,10 +3,12 @@
   "displayName": "llm-context-gen",
   "description": "",
   "publisher": "ChrisLaidler",
-  "version": "0.0.6",
+  "version": "0.0.8",
   "engines": {
     "vscode": "^1.75.0"
   },
+  "repository": {},
+  "icon": "images/icon.png",
   "categories": [
     "Other"
   ],

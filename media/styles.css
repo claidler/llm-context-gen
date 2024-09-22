@@ -1,207 +1,224 @@
-/* media/style.css */
-
 body {
-    font-family: Arial, sans-serif;
-    padding: 10px;
-    background-color: #1e1e1e;
-    color: #d4d4d4;
+  font-family: Arial, sans-serif;
+  padding: 10px;
+  background-color: #1e1e1e;
+  color: #d4d4d4;
 }
 
 h1 {
-    color: #569cd6;
-    margin-bottom: 10px;
+  color: #569cd6;
+  margin-bottom: 10px;
 }
 
 p {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 .prompt-container,
 .input-container {
-    width: 100%;
-    margin-bottom: 15px;
-    position: relative;
-    /* Added margin between form inputs */
+  width: 100%;
+  margin-bottom: 15px;
+  position: relative;
 }
 
 .prompt-container textarea {
-    width: 100%;
-    padding: 12px 14px;
-    border: 1px solid #3c3c3c;
-    border-radius: 6px;
-    background-color: #252526;
-    color: #d4d4d4;
-    box-sizing: border-box;
-    font-size: 14px;
-    transition: border-color 0.3s;
-    height: 100px;
-    /* Adjust height as needed */
-    resize: vertical;
-    /* Allow vertical resizing */
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #3c3c3c;
+  border-radius: 6px;
+  background-color: #252526;
+  color: #d4d4d4;
+  box-sizing: border-box;
+  font-size: 14px;
+  transition: border-color 0.3s;
+  height: 100px;
+  resize: vertical;
 }
 
 .prompt-container textarea:focus {
-    border-color: #569cd6;
-    outline: none;
+  border-color: #569cd6;
+  outline: none;
 }
 
 .prompt-container textarea::placeholder {
-    color: #6a6a6a;
+  color: #6a6a6a;
 }
 
 .input-container input[type="text"] {
-    width: 100%;
-    padding: 12px 14px;
-    border: 1px solid #3c3c3c;
-    border-radius: 6px;
-    background-color: #252526;
-    color: #d4d4d4;
-    box-sizing: border-box;
-    font-size: 14px;
-    transition: border-color 0.3s;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #3c3c3c;
+  border-radius: 6px;
+  background-color: #252526;
+  color: #d4d4d4;
+  box-sizing: border-box;
+  font-size: 14px;
+  transition: border-color 0.3s;
 }
 
 .input-container input[type="text"]:focus {
-    border-color: #569cd6;
-    outline: none;
+  border-color: #569cd6;
+  outline: none;
 }
 
 .input-container input[type="text"]::placeholder {
-    color: #6a6a6a;
+  color: #6a6a6a;
 }
 
 .dropdown {
-    position: absolute;
-    top: calc(100% + 5px);
-    /* Position dropdown below the input */
-    left: 0;
-    right: 0;
-    background-color: #2e2e2e;
-    border: 1px solid #3c3c3c;
-    border-top: none;
-    max-height: 250px;
-    overflow-y: auto;
-    z-index: 1000;
-    border-radius: 0 0 6px 6px;
-    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.5);
-    width: 100%;
-    /* Ensure the dropdown takes full width of the container */
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  right: 0;
+  background-color: #2e2e2e;
+  border: 1px solid #3c3c3c;
+  border-top: none;
+  max-height: 250px;
+  overflow-y: auto;
+  z-index: 1000;
+  border-radius: 0 0 6px 6px;
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.5);
+  width: 100%;
 }
 
 .dropdown.hidden {
-    display: none;
+  display: none;
 }
 
 .dropdown-item {
-    padding: 10px 14px;
-    cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
 }
 
 .dropdown-item:hover,
 .dropdown-item.active {
-    background-color: #094771;
-    color: #ffffff;
+  background-color: #094771;
+  color: #ffffff;
 }
 
 .dropdown::-webkit-scrollbar {
-    width: 8px;
+  width: 8px;
 }
 
 .dropdown::-webkit-scrollbar-track {
-    background: #2e2e2e;
+  background: #2e2e2e;
 }
 
 .dropdown::-webkit-scrollbar-thumb {
-    background-color: #5a5a5a;
-    border-radius: 4px;
+  background-color: #5a5a5a;
+  border-radius: 4px;
 }
 
 button {
-    margin-top: 20px;
-    padding: 10px 14px;
-    background-color: #007acc;
-    color: #ffffff;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s;
-    width: 100%;
+  margin-top: 20px;
+  padding: 10px 14px;
+  background-color: #007acc;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+  width: 100%;
 }
 
 button:hover {
-    background-color: #005fa3;
+  background-color: #005fa3;
+}
+
+.button-container {
+  display: flex;
+  flex-direction: column;
+}
+
+#clearButton {
+  background-color: #d9534f;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+  width: 100%;
+  padding: 10px 14px;
+}
+
+#clearButton:hover {
+  background-color: #c9302c;
 }
 
 .selected-files {
-    margin-top: 15px;
+  margin-top: 15px;
 }
 
 .selected-file {
-    background-color: #2d2d2d;
-    padding: 8px 12px;
-    border-radius: 4px;
-    margin-bottom: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 14px;
+  background-color: #2d2d2d;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
 }
 
 .selected-file span {
-    word-break: break-all;
+  word-break: break-all;
 }
 
 .remove-file {
-    display: 'flex';
-    align-items: center;
-    background: none;
-    border: none;
-    color: #ff5c5c;
-    cursor: pointer;
-    font-size: 14px;
-    width: 25%;
-    padding: 8px 12px;
-    margin-bottom: 8px;
+  display: "flex";
+  align-items: center;
+  background: none;
+  border: none;
+  color: #ff5c5c;
+  cursor: pointer;
+  font-size: 14px;
+  width: 25%;
+  padding: 8px 12px;
+  margin-bottom: 8px;
 }
 
 .remove-file:hover {
-    color: #ff1f1f;
-    /* Slightly darker red on hover */
+  color: #ff1f1f;
 }
 
 .notification {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background-color: #323232;
-    color: #ffffff;
-    padding: 10px 20px;
-    border-radius: 4px;
-    opacity: 0;
-    transition: opacity 0.5s ease-in-out;
-    z-index: 1001;
-    font-size: 14px;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #323232;
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+  z-index: 1001;
+  font-size: 14px;
 }
 
 .notification.show {
-    opacity: 1;
+  opacity: 1;
+}
+
+.file-type {
+  margin-left: 10px;
+  color: #6a6a6a;
 }
 
 @media (max-width: 600px) {
+  .prompt-container textarea,
+  .input-container input[type="text"],
+  button {
+    font-size: 14px;
+  }
 
-    .prompt-container textarea,
-    .input-container input[type="text"],
-    button {
-        font-size: 14px;
-    }
-
-    .dropdown-item,
-    .selected-file {
-        font-size: 14px;
-    }
+  .dropdown-item,
+  .selected-file {
+    font-size: 14px;
+  }
 }
